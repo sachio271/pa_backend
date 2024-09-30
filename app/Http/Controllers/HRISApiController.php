@@ -15,7 +15,7 @@ class HRISApiController extends Controller
             from masterstruct a
             left join employeestruct b on a.id=b.struct
             left join masteremployee c on c.ektp=b.ektp
-            left join employeestruct d on a.parentstruct=d.struct
+            left join employeestruct d on a.pastruct1=d.struct
             left join masteremployee f on f.ektp=d.ektp
             where f.ektp = ?',
             [$ektp]
@@ -34,7 +34,7 @@ class HRISApiController extends Controller
             from masterstruct a
             left join employeestruct b on a.id=b.struct
             left join masteremployee c on c.ektp=b.ektp
-            left join employeestruct d on a.parentstruct=d.struct
+            left join employeestruct d on a.pastruct1=d.struct
             left join masteremployee f on f.ektp=d.ektp
             where f.ektp = ?',
                 [$ektp]
@@ -63,7 +63,7 @@ class HRISApiController extends Controller
             from masterstruct a
             left join employeestruct b on a.id=b.struct
             left join masteremployee c on c.ektp=b.ektp
-            left join employeestruct d on a.parentstruct=d.struct
+            left join employeestruct d on a.pastruct1=d.struct
             left join masteremployee f on f.ektp=d.ektp
             where a.companycode not in (?, ?, ?, ?)
             order by a.companycode',
@@ -80,7 +80,7 @@ class HRISApiController extends Controller
             from masterstruct a
             left join employeestruct b on a.id=b.struct
             left join masteremployee c on c.ektp=b.ektp
-            left join employeestruct d on a.parentstruct=d.struct
+            left join employeestruct d on a.pastruct1=d.struct
             left join masteremployee f on f.ektp=d.ektp
             where a.companycode = ?
             order by a.companycode',
@@ -93,11 +93,11 @@ class HRISApiController extends Controller
     public function get_employee_department($companycode, $department)
     {
         $results = DB::select(
-            'select  a.*, b.*,c.ektp,c.name,a.parentstruct,f.name as nama_atasan, f.ektp as ektp_atasan
+            'select  a.*, b.*,c.ektp,c.name,a.pastruct1,f.name as nama_atasan, f.ektp as ektp_atasan
             from masterstruct a
             left join employeestruct b on a.id=b.struct
             left join masteremployee c on c.ektp=b.ektp
-            left join employeestruct d on a.parentstruct=d.struct
+            left join employeestruct d on a.pastruct1=d.struct
             left join masteremployee f on f.ektp=d.ektp
             where a.companycode = ? and a.department = ?',
             [$companycode, $department]
