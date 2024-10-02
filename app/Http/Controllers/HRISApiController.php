@@ -25,19 +25,26 @@ class HRISApiController extends Controller
 
     public function get_subordinates($ektp, $limit_date)
     {
+        $allSubordinates = [];
 
         function fetchSubordinates($ektp, $limit_date, &$allSubordinates)
         {
+            $endDate = '99981231';
 
             $results = DB::select(
-            'select  a.*, b.*,c.ektp,c.name,a.pastruct1,f.name as nama_atasan, f.ektp as ektp_atasan
-            from masterstruct a
-            left join employeestruct b on a.id=b.struct
+            "
+            select  a.*, b.*,c.ektp,c.name,a.pastruct1,f.name as nama_atasan, f.ektp as ektp_atasan
+            from employeestruct b
+            left join masterstruct a on a.id=b.struct
             left join masteremployee c on c.ektp=b.ektp
             left join employeestruct d on a.pastruct1=d.struct
             left join masteremployee f on f.ektp=d.ektp
-            where f.ektp = ? and b.StartDate < ?',
-                [$ektp, $limit_date]
+            where f.ektp = ? and b.enddate = ? and c.ektp in (select ektp from employeestruct
+                            where (status like 'JOIN' or status='-' ) and
+                                  ( struct not like '%D100%' and struct not like '%WFC%')
+                                  and startdate < ?
+                                  and ektp not in (select ektp from employeetermination))
+            ", [$ektp, $endDate, $limit_date]
             );
 
             foreach ($results as $result) {
@@ -50,6 +57,11 @@ class HRISApiController extends Controller
         }
 
         fetchSubordinates($ektp, $limit_date, $allSubordinates);
+
+        // Sort the array after all subordinates have been collected
+        usort($allSubordinates, function ($a, $b) {
+            return strcmp($a->name, $b->name);  // Sort by 'name' or any other field
+        });
 
 
         return response()->json(["message" => "sukses", 'data' => $allSubordinates]);
@@ -105,14 +117,21 @@ class HRISApiController extends Controller
         return response()->json(["message" => "sukses", 'data' => $results]);
     }
 
-    public function get_users() {
-        $results = DB::select('select  c.ektp,c.name
+    public function get_users()
+    {
+        $results = DB::select(
+            'select
+            distinct f.name AS nama_atasan,
+            f.ektp AS ektp_atasan
             from masterstruct a
-            left join employeestruct b on a.id=b.struct
-            left join masteremployee c on c.ektp=b.ektp
-            left join employeestruct d on a.pastruct1=d.struct
-            left join masteremployee f on f.ektp=d.ektp');
+            left join employeestruct b ON a.id = b.struct
+            left join employeestruct d ON a.pastruct1 = d.struct
+            left join masteremployee f ON f.ektp = d.ektp
+            where f.name is not null
+            order by f.name
+            '
+        );
 
-            return response()->json(["message" => "sukses", "data" => $results]);
+        return response()->json(["message" => "sukses", "data" => $results]);
     }
 }
