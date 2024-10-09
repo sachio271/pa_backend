@@ -26,7 +26,7 @@ class HRISApiController extends Controller
     public function get_subordinates($ektp, $limit_date)
     {
         $allSubordinates = [];
-
+        $endDate = '99981231';
         function fetchSubordinates($ektp, $limit_date, &$allSubordinates)
         {
             $endDate = '99981231';
@@ -44,6 +44,8 @@ class HRISApiController extends Controller
                                   ( struct not like '%D100%' and struct not like '%WFC%')
                                   and startdate < ?
                                   and ektp not in (select ektp from employeetermination))
+                                  and c.ektp not in ( select ektp from employeepaexception )
+                                  order by a.companycode,a.division,a.department,a.payrollsystem,a.office
             ", [$ektp, $endDate, $limit_date]
             );
 
@@ -57,6 +59,25 @@ class HRISApiController extends Controller
         }
 
         fetchSubordinates($ektp, $limit_date, $allSubordinates);
+
+        //Get data from pastruct2
+        $paStruct2 = DB::select('select c.ektp,c.name,a.*,f.name as nama_atasan, f.ektp as ektp_atasan, b.*
+            from employeestruct b
+            left join masterstruct a on a.id=b.struct
+            left join masteremployee c on c.ektp=b.ektp
+            left join employeestruct d on a.pastruct2=d.struct
+            left join masteremployee f on f.ektp=d.ektp
+            where b.enddate = ? and f.ektp= ? ', [$endDate, $ektp]);
+
+
+
+        if(!empty($paStruct2)) {
+            foreach($paStruct2 as $pa) {
+                $allSubordinates[] = $pa;
+            }
+        }
+
+        // dd(json_encode($allSubordinates));
 
         // Sort the array after all subordinates have been collected
         usort($allSubordinates, function ($a, $b) {
