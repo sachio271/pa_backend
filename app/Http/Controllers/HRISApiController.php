@@ -90,7 +90,40 @@ class HRISApiController extends Controller
 
     public function get_all_company()
     {
-        $excludedCompany = ['BMAS', 'SLL', 'WFC', 'PT'];
+        $excludedCompany = [
+            '',
+            'BMAS',
+            'SLL',
+            'WFC',
+            'PT',
+            'AB57',
+            'AB60',
+            'AB68',
+            'AB69',
+            'AB71',
+            'AB77',
+            'AB81',
+            'AB84',
+            'ABP',
+            'D010',
+            'D021',
+            'D030',
+            'D040',
+            'D070',
+            'D100',
+            'D101',
+            'D120',
+            'D151',
+            'D160',
+            'D182',
+            'D201',
+            'D202',
+            'D211',
+            'D214',
+            'D241',
+            'D440',
+            'D450'
+        ];
         $results = DB::select(
             'select distinct a.companycode
             from masterstruct a
@@ -98,12 +131,14 @@ class HRISApiController extends Controller
             left join masteremployee c on c.ektp=b.ektp
             left join employeestruct d on a.pastruct1=d.struct
             left join masteremployee f on f.ektp=d.ektp
-            where a.companycode not in (?, ?, ?, ?)
-            order by a.companycode',
-            $excludedCompany
+            order by a.companycode'
         );
 
-        return response()->json(["message" => "sukses", 'data' => $results]);
+        $filteredResults = array_filter($results, function($item) use ($excludedCompany) {
+            return !in_array($item->companycode, $excludedCompany);
+        });
+
+        return response()->json(["message" => "sukses", 'data' => $filteredResults]);
     }
 
     public function get_departments($companyCode)
