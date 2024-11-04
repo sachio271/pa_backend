@@ -27,6 +27,7 @@ class HRISApiController extends Controller
     {
         $allSubordinates = [];
         $endDate = '99981231';
+
         function fetchSubordinates($ektp, $limit_date, &$allSubordinates)
         {
             $endDate = '99981231';
@@ -86,6 +87,29 @@ class HRISApiController extends Controller
 
 
         return response()->json(["message" => "sukses", 'data' => $allSubordinates]);
+    }
+
+    public function get_all_data_employees($limit_date) {
+        $endDate = '99981231';
+        $results = DB::select(
+            "
+            select  a.*, b.*,c.ektp,c.name,a.pastruct1,f.name as nama_atasan, f.ektp as ektp_atasan
+            from employeestruct b
+            left join masterstruct a on a.id=b.struct
+            left join masteremployee c on c.ektp=b.ektp
+            left join employeestruct d on a.pastruct1=d.struct
+            left join masteremployee f on f.ektp=d.ektp
+            where b.enddate = ? and c.ektp in (select ektp from employeestruct
+                            where (status like 'JOIN' or status='-' ) and
+                                  ( struct not like '%D100%' and struct not like '%WFC%')
+                                  and startdate < ?
+                                  and ektp not in (select ektp from employeetermination))
+                                  and c.ektp not in ( select ektp from employeepaexception )
+                                  order by a.companycode,a.division,a.department,a.payrollsystem,a.office
+            ", [$endDate, $limit_date]
+            );
+
+        return response()->json(["message" => "sukses", 'data' => $results]);
     }
 
     public function get_all_company()
