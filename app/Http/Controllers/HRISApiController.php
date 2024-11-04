@@ -104,6 +104,7 @@ class HRISApiController extends Controller
             'AB77',
             'AB81',
             'AB84',
+            'AB02',
             'ABP',
             'D010',
             'D021',
@@ -125,17 +126,17 @@ class HRISApiController extends Controller
             'D450'
         ];
         $results = DB::select(
-            'select distinct a.companycode
+            'select distinct a.payrollsystem
             from masterstruct a
             left join employeestruct b on a.id=b.struct
             left join masteremployee c on c.ektp=b.ektp
             left join employeestruct d on a.pastruct1=d.struct
             left join masteremployee f on f.ektp=d.ektp
-            order by a.companycode'
+            order by a.payrollsystem'
         );
 
         $filteredResults = array_filter($results, function($item) use ($excludedCompany) {
-            return !in_array($item->companycode, $excludedCompany);
+            return !in_array($item->payrollsystem, $excludedCompany);
         });
 
         return response()->json(["message" => "sukses", 'data' => $filteredResults]);
@@ -144,14 +145,14 @@ class HRISApiController extends Controller
     public function get_departments($companyCode)
     {
         $results = DB::select(
-            'select distinct a.companycode, a.department
+            'select distinct a.payrollsystem, a.department
             from masterstruct a
             left join employeestruct b on a.id=b.struct
             left join masteremployee c on c.ektp=b.ektp
             left join employeestruct d on a.pastruct1=d.struct
             left join masteremployee f on f.ektp=d.ektp
-            where a.companycode = ?
-            order by a.companycode',
+            where a.payrollsystem = ?
+            order by a.payrollsystem',
             [$companyCode]
         );
 
@@ -167,7 +168,7 @@ class HRISApiController extends Controller
             left join masteremployee c on c.ektp=b.ektp
             left join employeestruct d on a.pastruct1=d.struct
             left join masteremployee f on f.ektp=d.ektp
-            where a.companycode = ? and a.department = ?',
+            where a.payrollsystem = ? and a.department = ?',
             [$companycode, $department]
         );
         return response()->json(["message" => "sukses", 'data' => $results]);
