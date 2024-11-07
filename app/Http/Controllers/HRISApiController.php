@@ -33,7 +33,7 @@ class HRISApiController extends Controller
             $endDate = '99981231';
 
             $results = DB::select(
-            "
+                "
             select  a.*, b.*,c.ektp,c.name,a.pastruct1,f.name as nama_atasan, f.ektp as ektp_atasan
             from employeestruct b
             left join masterstruct a on a.id=b.struct
@@ -47,7 +47,8 @@ class HRISApiController extends Controller
                                   and ektp not in (select ektp from employeetermination))
                                   and c.ektp not in ( select ektp from employeepaexception )
                                   order by a.companycode,a.division,a.department,a.payrollsystem,a.office
-            ", [$ektp, $endDate, $limit_date]
+            ",
+                [$ektp, $endDate, $limit_date]
             );
 
             foreach ($results as $result) {
@@ -72,8 +73,8 @@ class HRISApiController extends Controller
 
 
 
-        if(!empty($paStruct2)) {
-            foreach($paStruct2 as $pa) {
+        if (!empty($paStruct2)) {
+            foreach ($paStruct2 as $pa) {
                 $allSubordinates[] = $pa;
             }
         }
@@ -89,7 +90,75 @@ class HRISApiController extends Controller
         return response()->json(["message" => "sukses", 'data' => $allSubordinates]);
     }
 
-    public function get_all_data_employees($limit_date) {
+    public function get_nama_atasan ($ektp, $limit_date) {
+        $endDate = '99981231';
+        $results = DB::select(
+            "
+            select  a.*, b.*,c.ektp,c.name, if(a.pastruct2='',a.pastruct1,a.pastruct2) as pastruct1,
+            if(a.pastruct2='',f.name,i.name) as nama_atasan, if(a.pastruct2='',f.ektp,i.ektp) as ektp_atasan
+            from employeestruct b
+            left join masterstruct a on a.id=b.struct
+            left join masteremployee c on c.ektp=b.ektp
+            left join employeestruct d on a.pastruct1=d.struct
+            left join masteremployee f on f.ektp=d.ektp
+            left join employeestruct g on a.pastruct2=g.struct
+            left join masteremployee i on i.ektp=g.ektp
+            where c.ektp = ? and b.enddate = ? and c.ektp in (select ektp from employeestruct
+                            where (status like 'JOIN' or status='-' ) and
+                                  ( struct not like '%D100%' and struct not like '%WFC%')
+                                  and startdate < ?
+                                  and ektp not in (select ektp from employeetermination))
+                                  and c.ektp not in ( select ektp from employeepaexception )
+                                  order by a.companycode,a.division,a.department,a.payrollsystem,a.office",
+            [$ektp, $endDate, $limit_date]
+        );
+        return response()->json(["message" => "sukses", 'data' => $results]);
+    }
+
+    public function post_nama_atasan(Request $request)
+    {
+        // Validate the incoming request
+        $request->validate([
+            'ektpArray' => 'required|array|min:1',
+        ]);
+
+        $endDate = '99981231';
+        $ektpArray = $request->input('ektpArray');
+
+        $limit_date = $request->input('limit_date');
+
+        $placeholders = implode(',', array_fill(0, count($ektpArray), '?'));
+
+        $sql = "
+        SELECT a.*, b.*, c.ektp, c.name,
+        IF(a.pastruct2='', a.pastruct1, a.pastruct2) AS pastruct1,
+        IF(a.pastruct2='', f.name, i.name) AS nama_atasan,
+        IF(a.pastruct2='', f.ektp, i.ektp) AS ektp_atasan
+        FROM employeestruct b
+        LEFT JOIN masterstruct a ON a.id = b.struct
+        LEFT JOIN masteremployee c ON c.ektp = b.ektp
+        LEFT JOIN employeestruct d ON a.pastruct1 = d.struct
+        LEFT JOIN masteremployee f ON f.ektp = d.ektp
+        WHERE f.ektp IN ($placeholders)
+        AND b.enddate = ?
+        AND c.ektp IN (
+            SELECT ektp FROM employeestruct
+            WHERE (status LIKE 'JOIN' OR status = '-')
+            AND (struct NOT LIKE '%D100%' AND struct NOT LIKE '%WFC%')
+            AND startdate < ?
+            AND ektp NOT IN (SELECT ektp FROM employeetermination)
+        )
+        AND c.ektp NOT IN (SELECT ektp FROM employeepaexception)
+        ORDER BY a.companycode, a.division, a.department, a.payrollsystem, a.office
+        ";
+
+        $results = DB::select($sql, array_merge($ektpArray, [$endDate, $limit_date]));
+        return response()->json(["message" => "sukses", 'data' => $results]);
+    }
+
+
+    public function get_all_data_employees($limit_date)
+    {
         $endDate = '99981231';
         $results = DB::select(
             "
@@ -106,8 +175,9 @@ class HRISApiController extends Controller
                                   and ektp not in (select ektp from employeetermination))
                                   and c.ektp not in ( select ektp from employeepaexception )
                                   order by a.companycode,a.division,a.department,a.payrollsystem,a.office
-            ", [$endDate, $limit_date]
-            );
+            ",
+            [$endDate, $limit_date]
+        );
 
         return response()->json(["message" => "sukses", 'data' => $results]);
     }
@@ -159,7 +229,7 @@ class HRISApiController extends Controller
             order by a.payrollsystem'
         );
 
-        $filteredResults = array_filter($results, function($item) use ($excludedCompany) {
+        $filteredResults = array_filter($results, function ($item) use ($excludedCompany) {
             return !in_array($item->payrollsystem, $excludedCompany);
         });
 
