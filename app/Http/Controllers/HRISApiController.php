@@ -160,14 +160,16 @@ class HRISApiController extends Controller
     public function get_all_data_employees($limit_date)
     {
         $endDate = '99981231';
+
         $results = DB::select(
             "
-            select  a.*, b.*,c.ektp,c.name,a.pastruct1,f.name as nama_atasan, f.ektp as ektp_atasan
+            select  a.*, b.*,c.ektp, m.code as wingsID ,c.name,a.pastruct1,f.name as nama_atasan, f.ektp as ektp_atasan
             from employeestruct b
             left join masterstruct a on a.id=b.struct
             left join masteremployee c on c.ektp=b.ektp
             left join employeestruct d on a.pastruct1=d.struct
             left join masteremployee f on f.ektp=d.ektp
+            left join employeecode m on b.ektp=m.ektp and m.type='WINGSID'
             where b.enddate = ? and c.ektp in (select ektp from employeestruct
                             where (status like 'JOIN' or status='-' ) and
                                   ( struct not like '%D100%' and struct not like '%WFC%')
