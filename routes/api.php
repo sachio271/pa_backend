@@ -16,3 +16,4 @@ Route::get('/get_all_company', [HRISApiController::class, 'get_all_company'])->n
 Route::get('/get_departments/{companyCode}', [HRISApiController::class, 'get_departments'])->name('get_departments');
 Route::get('/get_employee_department/{companyCode}/{department}', [HRISApiController::class, 'get_employee_department'])->name('get_employee_department');
 Route::get('/get_users', [HRISApiController::class, 'get_users'])->name('get_users');
+Route::get('/get_users_specified/{company}/{department}', [HRISApiController::class, 'get_users_specified'])->name('get_users_specified');

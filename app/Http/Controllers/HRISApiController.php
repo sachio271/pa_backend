@@ -90,7 +90,8 @@ class HRISApiController extends Controller
         return response()->json(["message" => "sukses", 'data' => $allSubordinates]);
     }
 
-    public function get_nama_atasan ($ektp, $limit_date) {
+    public function get_nama_atasan($ektp, $limit_date)
+    {
         $endDate = '99981231';
         $results = DB::select(
             "
@@ -283,6 +284,25 @@ class HRISApiController extends Controller
             where f.name is not null
             order by f.name
             '
+        );
+
+        return response()->json(["message" => "sukses", "data" => $results]);
+    }
+
+    public function get_users_specified($company, $department)
+    {
+        $results = DB::select(
+            'select
+            distinct f.name AS nama_atasan,
+            f.ektp AS ektp_atasan
+            from masterstruct a
+            left join employeestruct b ON a.id = b.struct
+            left join employeestruct d ON a.pastruct1 = d.struct
+            left join masteremployee f ON f.ektp = d.ektp
+            where f.name is not null and a.department = ? and a.payrollsystem = ?
+            order by f.name
+            ',
+            [$department, $company]
         );
 
         return response()->json(["message" => "sukses", "data" => $results]);
