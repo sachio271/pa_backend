@@ -23,6 +23,73 @@ class HRISApiController extends Controller
         return response()->json(["message" => "sukses", 'data' => $results]);
     }
 
+    // public function get_subordinates($ektp, $limit_date)
+    // {
+    //     $allSubordinates = [];
+    //     $endDate = '99981231';
+
+    //     function fetchSubordinates($ektp, $limit_date, &$allSubordinates)
+    //     {
+    //         $endDate = '99981231';
+
+    //         $results = DB::select(
+    //             "
+    //         select  a.*, b.*,c.ektp,c.name,a.pastruct1,f.name as nama_atasan, f.ektp as ektp_atasan
+    //         from employeestruct b
+    //         left join masterstruct a on a.id=b.struct
+    //         left join masteremployee c on c.ektp=b.ektp
+    //         left join employeestruct d on a.pastruct1=d.struct
+    //         left join masteremployee f on f.ektp=d.ektp
+    //         where f.ektp = ? and b.enddate = ? and c.ektp in (select ektp from employeestruct
+    //                         where (status like 'JOIN' or status='-' ) and
+    //                               ( struct not like '%D100%' and struct not like '%WFC%')
+    //                               and startdate < ?
+    //                               and ektp not in (select ektp from employeetermination))
+    //                               and c.ektp not in ( select ektp from employeepaexception )
+    //                               order by a.companycode,a.division,a.department,a.payrollsystem,a.office
+    //         ",
+    //             [$ektp, $endDate, $limit_date]
+    //         );
+
+    //         foreach ($results as $result) {
+    //             // Add the current subordinate to the array
+    //             $allSubordinates[] = $result;
+
+    //             // Recursively fetch subordinates for this subordinate
+    //             fetchSubordinates($result->ektp, $limit_date, $allSubordinates);
+    //         }
+    //     }
+
+    //     fetchSubordinates($ektp, $limit_date, $allSubordinates);
+
+    //     //Get data from pastruct2
+    //     $paStruct2 = DB::select('select c.ektp,c.name,a.*,f.name as nama_atasan, f.ektp as ektp_atasan, b.*
+    //         from employeestruct b
+    //         left join masterstruct a on a.id=b.struct
+    //         left join masteremployee c on c.ektp=b.ektp
+    //         left join employeestruct d on a.pastruct2=d.struct
+    //         left join masteremployee f on f.ektp=d.ektp
+    //         where b.enddate = ? and f.ektp= ? ', [$endDate, $ektp]);
+
+
+
+    //     if (!empty($paStruct2)) {
+    //         foreach ($paStruct2 as $pa) {
+    //             $allSubordinates[] = $pa;
+    //         }
+    //     }
+
+    //     // dd(json_encode($allSubordinates));
+
+    //     // Sort the array after all subordinates have been collected
+    //     usort($allSubordinates, function ($a, $b) {
+    //         return strcmp($a->name, $b->name);  // Sort by 'name' or any other field
+    //     });
+
+
+    //     return response()->json(["message" => "sukses", 'data' => $allSubordinates]);
+    // }
+
     public function get_subordinates($ektp, $limit_date)
     {
         $allSubordinates = [];
@@ -32,6 +99,7 @@ class HRISApiController extends Controller
         {
             $endDate = '99981231';
 
+            // Fetch subordinates via pastruct1
             $results = DB::select(
                 "
             select  a.*, b.*,c.ektp,c.name,a.pastruct1,f.name as nama_atasan, f.ektp as ektp_atasan
@@ -58,37 +126,40 @@ class HRISApiController extends Controller
                 // Recursively fetch subordinates for this subordinate
                 fetchSubordinates($result->ektp, $limit_date, $allSubordinates);
             }
-        }
 
-        fetchSubordinates($ektp, $limit_date, $allSubordinates);
-
-        //Get data from pastruct2
-        $paStruct2 = DB::select('select c.ektp,c.name,a.*,f.name as nama_atasan, f.ektp as ektp_atasan, b.*
+            // Fetch subordinates via pastruct2
+            $paStruct2 = DB::select(
+                '
+            select c.ektp,c.name,a.*,f.name as nama_atasan, f.ektp as ektp_atasan, b.*
             from employeestruct b
             left join masterstruct a on a.id=b.struct
             left join masteremployee c on c.ektp=b.ektp
             left join employeestruct d on a.pastruct2=d.struct
             left join masteremployee f on f.ektp=d.ektp
-            where b.enddate = ? and f.ektp= ? ', [$endDate, $ektp]);
+            where b.enddate = ? and f.ektp = ?
+            ',
+                [$endDate, $ektp]
+            );
 
-
-
-        if (!empty($paStruct2)) {
             foreach ($paStruct2 as $pa) {
+                // Add the current subordinate to the array
                 $allSubordinates[] = $pa;
+
+                // Recursively fetch subordinates for this subordinate
+                fetchSubordinates($pa->ektp, $limit_date, $allSubordinates);
             }
         }
 
-        // dd(json_encode($allSubordinates));
+        fetchSubordinates($ektp, $limit_date, $allSubordinates);
 
         // Sort the array after all subordinates have been collected
         usort($allSubordinates, function ($a, $b) {
             return strcmp($a->name, $b->name);  // Sort by 'name' or any other field
         });
 
-
         return response()->json(["message" => "sukses", 'data' => $allSubordinates]);
     }
+
 
     public function get_nama_atasan($ektp, $limit_date)
     {
