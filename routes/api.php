@@ -14,6 +14,7 @@ Route::post('/post_nama_atasan', [HRISApiController::class, 'post_nama_atasan'])
 Route::get('/get_all_data_employees/{limit_date}', [HRISApiController::class, 'get_all_data_employees'])->name('get_all_data_employees');
 Route::get('/get_all_company', [HRISApiController::class, 'get_all_company'])->name('get_all_company');
 Route::get('/get_departments_byComp/{company}', [HRISApiController::class, 'get_departments_byComp'])->name('get_departments_byComp');
+Route::get('/get_all_pacode', [HRISApiController::class, 'get_all_pacode'])->name('get_all_pacode');
 Route::get('/get_departments/{companyCode}', [HRISApiController::class, 'get_departments'])->name('get_departments');
 Route::get('/get_employee_department/{companyCode}/{department}', [HRISApiController::class, 'get_employee_department'])->name('get_employee_department');
 Route::get('/get_users', [HRISApiController::class, 'get_users'])->name('get_users');
