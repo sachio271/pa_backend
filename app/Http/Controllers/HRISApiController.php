@@ -180,7 +180,6 @@ class HRISApiController extends Controller
             left join employeestruct d on a.pastruct1=d.struct
             left join masteremployee f on f.ektp=d.ektp
             where b.enddate = ?
-            and (b.status like 'JOIN' or b.status='-' )
             and (b.struct not like '%D100%' and b.struct not like '%WFC%')
             and b.startdate < ?
             and c.ektp not in (select ektp from employeetermination)
