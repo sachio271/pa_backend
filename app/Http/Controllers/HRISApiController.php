@@ -164,42 +164,52 @@ class HRISApiController extends Controller
     {
         $endDate = '99981231';
 
-        // --- 1️⃣ Ambil semua data pastruct1 sekaligus ---
+        // --- 1️⃣ Ambil semua data pastruct1 (dengan subquery asli) ---
         $pastruct1Data = DB::select("
             select
-                a.*,
-                b.*,
-                c.ektp,
-                c.name,
+                a.*, b.*, c.ektp, c.name,
                 a.pastruct1,
                 f.name as nama_atasan,
                 f.ektp as ektp_atasan
             from employeestruct b
-            left join masterstruct a on a.id=b.struct
-            left join masteremployee c on c.ektp=b.ektp
-            left join employeestruct d on a.pastruct1=d.struct
-            left join masteremployee f on f.ektp=d.ektp
+            left join masterstruct a on a.id = b.struct
+            left join masteremployee c on c.ektp = b.ektp
+            left join employeestruct d on a.pastruct1 = d.struct
+            left join masteremployee f on f.ektp = d.ektp
             where b.enddate = ?
-            and (b.struct not like '%D100%' and b.struct not like '%WFC%')
-            and b.startdate < ?
-            and c.ektp not in (select ektp from employeetermination)
+            and c.ektp in (
+                    select ektp
+                    from employeestruct
+                    where (status like 'JOIN' or status='-' )
+                    and (struct not like '%D100%' and struct not like '%WFC%')
+                    and startdate < ?
+                    and ektp not in (select ektp from employeetermination)
+            )
             and c.ektp not in (select ektp from employeepaexception)
+            order by a.companycode, a.division, a.department, a.payrollsystem, a.office
         ", [$endDate, $limit_date]);
 
-        // --- 2️⃣ Ambil semua data pastruct2 sekaligus (1 level only) ---
+
+        // --- 2️⃣ Ambil semua data pastruct2 (pakai subquery juga) ---
         $pastruct2Data = DB::select("
             select
-                c.ektp, c.name, a.*,
-                f.name as nama_atasan,
-                f.ektp as ektp_atasan,
-                b.*
+                c.ektp, c.name, a.*, f.name as nama_atasan, f.ektp as ektp_atasan, b.*
             from employeestruct b
-            left join masterstruct a on a.id=b.struct
-            left join masteremployee c on c.ektp=b.ektp
-            left join employeestruct d on a.pastruct2=d.struct
-            left join masteremployee f on f.ektp=d.ektp
+            left join masterstruct a on a.id = b.struct
+            left join masteremployee c on c.ektp = b.ektp
+            left join employeestruct d on a.pastruct2 = d.struct
+            left join masteremployee f on f.ektp = d.ektp
             where b.enddate = ?
-        ", [$endDate]);
+            and c.ektp in (
+                    select ektp
+                    from employeestruct
+                    where (status like 'JOIN' or status='-' )
+                    and (struct not like '%D100%' and struct not like '%WFC%')
+                    and startdate < ?
+                    and ektp not in (select ektp from employeetermination)
+            )
+            and c.ektp not in (select ektp from employeepaexception)
+        ", [$endDate, $limit_date]);
 
         // --- 3️⃣ Buat mapping atasan → bawahan ---
         $mapPastruct1 = [];
@@ -219,8 +229,27 @@ class HRISApiController extends Controller
         // --- 4️⃣ Rekursif di memory ---
         $allSubordinates = [];
 
-        $this->collectPastruct1Recursive($ektp, $mapPastruct1, $allSubordinates);
-        $this->collectPastruct2Once($ektp, $mapPastruct2, $allSubordinates);
+        // fungsi rekursif untuk pastruct1
+        $collectPastruct1Recursive = function ($ektp, &$mapPastruct1, &$allSubordinates, &$collectPastruct1Recursive) {
+            if (isset($mapPastruct1[$ektp])) {
+                foreach ($mapPastruct1[$ektp] as $child) {
+                    $allSubordinates[] = $child;
+                    $collectPastruct1Recursive($child->ektp, $mapPastruct1, $allSubordinates, $collectPastruct1Recursive);
+                }
+            }
+        };
+
+        // fungsi satu level untuk pastruct2
+        $collectPastruct2Once = function ($ektp, &$mapPastruct2, &$allSubordinates) {
+            if (isset($mapPastruct2[$ektp])) {
+                foreach ($mapPastruct2[$ektp] as $child) {
+                    $allSubordinates[] = $child;
+                }
+            }
+        };
+
+        $collectPastruct1Recursive($ektp, $mapPastruct1, $allSubordinates, $collectPastruct1Recursive);
+        $collectPastruct2Once($ektp, $mapPastruct2, $allSubordinates);
 
         // --- 5️⃣ Sort hasil akhir ---
         usort($allSubordinates, fn($a, $b) => strcmp($a->name, $b->name));
@@ -231,30 +260,6 @@ class HRISApiController extends Controller
         ]);
     }
 
-    private function collectPastruct1Recursive($ektp, &$mapPastruct1, &$allSubordinates, $depth = 0)
-    {
-        if (!isset($mapPastruct1[$ektp])) return;
-
-        foreach ($mapPastruct1[$ektp] as $sub) {
-            if (!isset($allSubordinates[$sub->ektp])) {
-                $allSubordinates[$sub->ektp] = $sub;
-
-                // recursive
-                $this->collectPastruct1Recursive($sub->ektp, $mapPastruct1, $allSubordinates, $depth + 1);
-            }
-        }
-    }
-
-    private function collectPastruct2Once($ektp, &$mapPastruct2, &$allSubordinates)
-    {
-        if (!isset($mapPastruct2[$ektp])) return;
-
-        foreach ($mapPastruct2[$ektp] as $sub) {
-            if (!isset($allSubordinates[$sub->ektp])) {
-                $allSubordinates[$sub->ektp] = $sub;
-            }
-        }
-    }
 
 
 
