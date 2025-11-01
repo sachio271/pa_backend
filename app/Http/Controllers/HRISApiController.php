@@ -393,7 +393,10 @@ class HRISApiController extends Controller
             'D214',
             'D241',
             'D440',
-            'D450'
+            'D450',
+            'D170',
+            'D103',
+            'D180'
         ];
         $results = DB::select(
             'select distinct a.payrollsystem
