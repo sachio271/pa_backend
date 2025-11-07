@@ -174,7 +174,7 @@ class HRISApiController extends Controller
             from employeestruct b
             left join masterstruct a on a.id = b.struct
             left join masteremployee c on c.ektp = b.ektp
-            left join employeestruct d on a.pastruct1 = d.struct
+            left join employeestruct d on a.pastruct1 = d.struct and b.enddate between d.startdate and d.enddate
             left join masteremployee f on f.ektp = d.ektp
             where b.enddate = ?
             and c.ektp in (
