@@ -178,12 +178,12 @@ class HRISApiController extends Controller
             left join masteremployee f on f.ektp = d.ektp	
             where b.enddate = ?	
             and c.ektp in (	
-                    select ektp	
+                    select a.ektp	
                     from employeestruct a	
 		    right join employeecode c on a.ektp=c.ektp and c.`type`='WINGSID'
                     where (a.`status`='JOIN' or a.`status`='-' or a.`status`='JOIN-KONTRAK' or a.`status`='JOIN-TETAP'  )	
-                    and startdate < ?	
-                    and ektp not in (select ektp from employeetermination)	
+                    and a.startdate < ?	
+                    and a.ektp not in (select ektp from employeetermination)	
             )	
             and c.ektp not in (select ektp from employeepaexception)	
             order by a.companycode, a.division, a.department, a.payrollsystem, a.office
@@ -228,12 +228,12 @@ class HRISApiController extends Controller
             left join masteremployee f on f.ektp = d.ektp	
             where b.enddate = ?	
             and c.ektp in (	
-                    select ektp	
+                    select a.ektp	
                     from employeestruct a	
 		    right join employeecode c on a.ektp=c.ektp and c.`type`='WINGSID'
                     where (a.`status`='JOIN' or a.`status`='-' or a.`status`='JOIN-KONTRAK' or a.`status`='JOIN-TETAP'  )	
-                    and startdate < ?	
-                    and ektp not in (select ektp from employeetermination)	
+                    and a.startdate < ?	
+                    and a.ektp not in (select ektp from employeetermination)	
             )	
             and c.ektp not in (select ektp from employeepaexception)	
             order by a.companycode, a.division, a.department, a.payrollsystem, a.office
@@ -384,23 +384,25 @@ class HRISApiController extends Controller
 
         $results = DB::select(
             "
-            select  a.*, b.*,c.ektp,c.name, if(a.pastruct2='',a.pastruct1,a.pastruct2) as pastruct1,
-            if(a.pastruct2='',f.name,i.name) as nama_atasan, if(a.pastruct2='',f.ektp,i.ektp) as ektp_atasan
+            select  a.*, b.*,c.ektp, m.code as wingsID ,c.name,a.pastruct1,f.name as nama_atasan, f.ektp as ektp_atasan
             from employeestruct b
             left join masterstruct a on a.id=b.struct
             left join masteremployee c on c.ektp=b.ektp
-            left join employeestruct d on a.pastruct1=d.struct and b.enddate between d.startdate and d.enddate	
+            left join employeestruct d on a.pastruct1=d.struct
             left join masteremployee f on f.ektp=d.ektp
-            left join employeestruct g on a.pastruct2=g.struct and b.enddate between g.startdate and g.enddate	
-            left join masteremployee i on i.ektp=g.ektp
-	    right join employeecode m on b.ektp=m.ektp and m.type='WINGSID'
-            where c.ektp = ? and b.enddate = ? and c.ektp in (select a.ektp from employeestruct a
-				  right join employeecode c on a.ektp=c.ektp and c.type='WINGSID'
-                                  where (status like 'JOIN' or status='-' ) and
-                                  and startdate < ?
-                                  and ektp not in (select ektp from employeetermination))
-                                  and c.ektp not in ( select ektp from employeepaexception )
-                                  order by a.companycode,a.division,a.department,a.payrollsystem,a.office
+	        right join employeecode m on b.ektp=m.ektp and m.type='WINGSID'
+            where b.enddate = ? 
+            and c.ektp in (
+                    select a.ektp
+                    from employeestruct a	
+		    right join employeecode c on a.ektp=c.ektp and c.`type`='WINGSID'
+                    where (a.`status`='JOIN' or a.`status`='-' or a.`status`='JOIN-KONTRAK' or a.`status`='JOIN-TETAP'  )	
+                    and a.startdate < ?	
+                    and a.ektp not in (select ektp from employeetermination
+                    )
+            )
+            and c.ektp not in (select ektp from employeepaexception)
+            order by a.companycode, a.division, a.department, a.payrollsystem, a.office
             ",
             [$endDate, $limit_date]
         );
