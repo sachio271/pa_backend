@@ -320,17 +320,19 @@ class HRISApiController extends Controller
             from employeestruct b
             left join masterstruct a on a.id=b.struct
             left join masteremployee c on c.ektp=b.ektp
-            left join employeestruct d on a.pastruct1=d.struct
+            left join employeestruct d on a.pastruct1=d.struct and b.enddate between d.startdate and d.enddate	
             left join masteremployee f on f.ektp=d.ektp
-            left join employeestruct g on a.pastruct2=g.struct
+            left join employeestruct g on a.pastruct2=g.struct and b.enddate between g.startdate and g.enddate
             left join masteremployee i on i.ektp=g.ektp
-            where c.ektp = ? and b.enddate = ? and c.ektp in (select ektp from employeestruct
-                            where (status like 'JOIN' or status='-' ) and
-                                  ( struct not like '%D100%' and struct not like '%WFC%')
-                                  and startdate < ?
-                                  and ektp not in (select ektp from employeetermination))
-                                  and c.ektp not in ( select ektp from employeepaexception )
-                                  order by a.companycode,a.division,a.department,a.payrollsystem,a.office",
+            where c.ektp = ? and b.enddate = ? 
+            and c.ektp in (select ektp from employeestruct a
+                            right join employeecode c on a.ektp=c.ektp and c.`type`='WINGSID'
+                            where (a.`status`='JOIN' or a.`status`='-' or a.`status`='JOIN-KONTRAK' or a.`status`='JOIN-TETAP'  ) 
+                            and a.startdate < ? 
+                            and a.ektp not in (select ektp from employeetermination)
+                            )
+            and c.ektp not in ( select ektp from employeepaexception )
+            order by a.companycode,a.division,a.department,a.payrollsystem,a.office",
             [$ektp, $endDate, $limit_date]
         );
         return response()->json(["message" => "sukses", 'data' => $results]);
