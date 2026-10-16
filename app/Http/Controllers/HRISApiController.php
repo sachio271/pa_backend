@@ -325,7 +325,7 @@ class HRISApiController extends Controller
             left join employeestruct g on a.pastruct2=g.struct and b.enddate between g.startdate and g.enddate
             left join masteremployee i on i.ektp=g.ektp
             where c.ektp = ? and b.enddate = ? 
-            and c.ektp in (select ektp from employeestruct a
+            and c.ektp in (select a.ektp from employeestruct a
                             right join employeecode c on a.ektp=c.ektp and c.`type`='WINGSID'
                             where (a.`status`='JOIN' or a.`status`='-' or a.`status`='JOIN-KONTRAK' or a.`status`='JOIN-TETAP'  ) 
                             and a.startdate < ? 
