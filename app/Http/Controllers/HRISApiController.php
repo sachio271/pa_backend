@@ -475,13 +475,12 @@ class HRISApiController extends Controller
             'select distinct a.companycode
             from masterstruct a
             left join employeestruct b on a.id=b.struct
-            left join masteremployee c on c.ektp=b.ektp
-            where ( a.payrollsystem not  like 'AB%' and a.payrollsystem not  like 'D0%' and a.payrollsystem not  like 'D1%' and a.payrollsystem not  like 'D2%' )
-            order by a.payrollsystem'
+            where ( a.companycode not  like 'AB%' and a.companycode not  like 'D0%' and a.companycode not  like 'D1%' and a.companycode not  like 'D2%' and a.companycode not  like 'D3%' and a.companycode not  like 'D4%' )
+            order by a.companycode'
         );
 
         $filteredResults = array_filter($results, function ($item) use ($excludedCompany) {
-            return !in_array($item->payrollsystem, $excludedCompany);
+            return !in_array($item->companycode, $excludedCompany);
         });
 
         return response()->json(["message" => "sukses", 'data' => $filteredResults]);
@@ -493,8 +492,7 @@ class HRISApiController extends Controller
             'select distinct a.department
             from masterstruct a
             left join employeestruct b on a.id=b.struct
-            left join masteremployee c on c.ektp=b.ektp
-            where a.payrollsystem = ?
+            where a.companycode = ?
             order by a.department',
             [$company]
         );
@@ -518,14 +516,14 @@ class HRISApiController extends Controller
     public function get_departments($companyCode)
     {
         $results = DB::select(
-            'select distinct a.payrollsystem, a.department
+            'select distinct a.companycode, a.department
             from masterstruct a
             left join employeestruct b on a.id=b.struct
             left join masteremployee c on c.ektp=b.ektp
             left join employeestruct d on a.pastruct1=d.struct
             left join masteremployee f on f.ektp=d.ektp
             where a.payrollsystem = ?
-            order by a.payrollsystem',
+            order by a.companycode',
             [$companyCode]
         );
 
@@ -541,7 +539,7 @@ class HRISApiController extends Controller
             left join masteremployee c on c.ektp=b.ektp
             left join employeestruct d on a.pastruct1=d.struct
             left join masteremployee f on f.ektp=d.ektp
-            where a.payrollsystem = ? and a.department = ?',
+            where a.CompanyCode = ? and a.department = ?',
             [$companycode, $department]
         );
         return response()->json(["message" => "sukses", 'data' => $results]);
