@@ -475,11 +475,11 @@ class HRISApiController extends Controller
             'D180'
         ];
         $results = DB::select(
-            'select distinct a.companycode as payrollsystem
+            "select distinct a.companycode as payrollsystem
             from masterstruct a
             left join employeestruct b on a.id=b.struct
             where ( a.companycode not  like 'AB%' and a.companycode not  like 'D0%' and a.companycode not  like 'D1%' and a.companycode not  like 'D2%' and a.companycode not  like 'D3%' and a.companycode not  like 'D4%' )
-            order by a.companycode'
+            order by a.companycode"
         );
 
         $filteredResults = array_filter($results, function ($item) use ($excludedCompany) {
@@ -511,7 +511,7 @@ class HRISApiController extends Controller
             left join masteremployee c on c.ektp=b.ektp
             left join employeestruct d on a.pastruct1=d.struct
             left join masteremployee f on f.ektp=d.ektp
-            where a.PACode <> null OR a.PACode <> ''
+            where a.PACode IS NOT null AND a.PACode <> ''
             order by a.PACode");
         return response()->json(["message" => "sukses", 'data' => $results]);
     }
