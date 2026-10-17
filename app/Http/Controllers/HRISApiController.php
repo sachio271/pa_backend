@@ -177,6 +177,7 @@ class HRISApiController extends Controller
             left join employeestruct d on a.pastruct1 = d.struct and b.enddate between d.startdate and d.enddate	
             left join masteremployee f on f.ektp = d.ektp	
             where b.enddate = ?	
+            and (a.companycode not  like 'SLL%' and a.companycode not  like 'AB%' and a.companycode not  like 'D0%' and a.companycode not  like 'D1%' and a.companycode not  like 'D2%' and a.companycode not  like 'D3%' and a.companycode not  like 'D4%')
             and c.ektp in (	
                     select a.ektp	
                     from employeestruct a	
@@ -227,6 +228,7 @@ class HRISApiController extends Controller
             left join employeestruct d on a.pastruct2 = d.struct and b.enddate between d.startdate and d.enddate	
             left join masteremployee f on f.ektp = d.ektp	
             where b.enddate = ?	
+            and (a.companycode not  like 'SLL%' and a.companycode not  like 'AB%' and a.companycode not  like 'D0%' and a.companycode not  like 'D1%' and a.companycode not  like 'D2%' and a.companycode not  like 'D3%' and a.companycode not  like 'D4%')
             and c.ektp in (	
                     select a.ektp	
                     from employeestruct a	
@@ -394,6 +396,7 @@ class HRISApiController extends Controller
             left join masteremployee f on f.ektp=d.ektp
 	        right join employeecode m on b.ektp=m.ektp and m.type='WINGSID'
             where b.enddate = ? 
+            and (a.companycode not  like 'SLL%' and a.companycode not  like 'AB%' and a.companycode not  like 'D0%' and a.companycode not  like 'D1%' and a.companycode not  like 'D2%' and a.companycode not  like 'D3%' and a.companycode not  like 'D4%')
             and c.ektp in (
                     select a.ektp
                     from employeestruct a	
