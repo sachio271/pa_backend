@@ -46,7 +46,7 @@ class HRISApiController extends Controller
     //                               and startdate < ?
     //                               and ektp not in (select ektp from employeetermination))
     //                               and c.ektp not in ( select ektp from employeepaexception )
-    //                               order by a.companycode,a.division,a.department,a.payrollsystem,a.office
+    //                               order by a.companycode,a.division,a.department,a.office
     //         ",
     //             [$ektp, $endDate, $limit_date]
     //         );
@@ -114,7 +114,7 @@ class HRISApiController extends Controller
     //                               and startdate < ?
     //                               and ektp not in (select ektp from employeetermination))
     //                               and c.ektp not in ( select ektp from employeepaexception )
-    //                               order by a.companycode,a.division,a.department,a.payrollsystem,a.office
+    //                               order by a.companycode,a.division,a.department,a.office
     //         ",
     //             [$ektp, $endDate, $limit_date]
     //         );
@@ -186,7 +186,7 @@ class HRISApiController extends Controller
                     and a.ektp not in (select ektp from employeetermination)	
             )	
             and c.ektp not in (select ektp from employeepaexception)	
-            order by a.companycode, a.division, a.department, a.payrollsystem, a.office
+            order by a.companycode, a.division, a.department, a.office
         ", [$endDate, $limit_date]);
 
         // $pastruct1Data = DB::select("
@@ -210,7 +210,7 @@ class HRISApiController extends Controller
         //             and ektp not in (select ektp from employeetermination)
         //     )
         //     and c.ektp not in (select ektp from employeepaexception)
-        //     order by a.companycode, a.division, a.department, a.payrollsystem, a.office
+        //     order by a.companycode, a.division, a.department, a.office
         // ", [$endDate, $limit_date]);
 
 
@@ -236,7 +236,7 @@ class HRISApiController extends Controller
                     and a.ektp not in (select ektp from employeetermination)	
             )	
             and c.ektp not in (select ektp from employeepaexception)	
-            order by a.companycode, a.division, a.department, a.payrollsystem, a.office
+            order by a.companycode, a.division, a.department, a.office
         ", [$endDate, $limit_date]);
         // $pastruct2Data = DB::select("
         //     select
@@ -332,7 +332,7 @@ class HRISApiController extends Controller
                             and a.ektp not in (select ektp from employeetermination)
                             )
             and c.ektp not in ( select ektp from employeepaexception )
-            order by a.companycode,a.division,a.department,a.payrollsystem,a.office",
+            order by a.companycode,a.division,a.department,a.office",
             [$ektp, $endDate, $limit_date]
         );
         return response()->json(["message" => "sukses", 'data' => $results]);
@@ -372,7 +372,7 @@ class HRISApiController extends Controller
             AND ektp NOT IN (SELECT ektp FROM employeetermination)
         )
         AND c.ektp NOT IN (SELECT ektp FROM employeepaexception)
-        ORDER BY a.companycode, a.division, a.department, a.payrollsystem, a.office
+        ORDER BY a.companycode, a.division, a.department, a.office
         ";
 
         $results = DB::select($sql, array_merge($ektpArray, [$endDate, $limit_date]));
@@ -404,7 +404,7 @@ class HRISApiController extends Controller
                     )
             )
             and c.ektp not in (select ektp from employeepaexception)
-            order by a.companycode, a.division, a.department, a.payrollsystem, a.office
+            order by a.companycode, a.division, a.department, a.office
             ",
             [$endDate, $limit_date]
         );
@@ -423,7 +423,7 @@ class HRISApiController extends Controller
         //                           and startdate < ?
         //                           and ektp not in (select ektp from employeetermination))
         //                           and c.ektp not in ( select ektp from employeepaexception )
-        //                           order by a.companycode,a.division,a.department,a.payrollsystem,a.office
+        //                           order by a.companycode,a.division,a.department,a.office
         //     ",
         //     [$endDate, $limit_date]
         // );
@@ -522,7 +522,7 @@ class HRISApiController extends Controller
             left join masteremployee c on c.ektp=b.ektp
             left join employeestruct d on a.pastruct1=d.struct
             left join masteremployee f on f.ektp=d.ektp
-            where a.payrollsystem = ?
+            where a.companycode = ?
             order by a.companycode',
             [$companyCode]
         );
@@ -573,7 +573,7 @@ class HRISApiController extends Controller
             left join employeestruct b ON a.id = b.struct
             left join employeestruct d ON a.pastruct1 = d.struct
             left join masteremployee f ON f.ektp = d.ektp
-            where f.name is not null and a.department = ? and a.payrollsystem = ?
+            where f.name is not null and a.department = ? and a.companycode = ?
             order by f.name
             ',
             [$department, $company]
