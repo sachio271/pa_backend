@@ -475,7 +475,7 @@ class HRISApiController extends Controller
             'D180'
         ];
         $results = DB::select(
-            'select distinct a.companycode
+            'select distinct a.companycode as payrollsystem
             from masterstruct a
             left join employeestruct b on a.id=b.struct
             where ( a.companycode not  like 'AB%' and a.companycode not  like 'D0%' and a.companycode not  like 'D1%' and a.companycode not  like 'D2%' and a.companycode not  like 'D3%' and a.companycode not  like 'D4%' )
@@ -483,7 +483,7 @@ class HRISApiController extends Controller
         );
 
         $filteredResults = array_filter($results, function ($item) use ($excludedCompany) {
-            return !in_array($item->companycode, $excludedCompany);
+            return !in_array($item->payrollsystem, $excludedCompany);
         });
 
         return response()->json(["message" => "sukses", 'data' => $filteredResults]);
@@ -519,7 +519,7 @@ class HRISApiController extends Controller
     public function get_departments($companyCode)
     {
         $results = DB::select(
-            'select distinct a.companycode, a.department
+            'select distinct a.companycode as payrollsystem, a.department
             from masterstruct a
             left join employeestruct b on a.id=b.struct
             left join masteremployee c on c.ektp=b.ektp
