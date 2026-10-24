@@ -448,36 +448,36 @@ class HRISApiController extends Controller
             'TRK',
             'AMB',
             'BAU',
-          //  'AB57',
-          //  'AB60',
-          //  'AB68',
-          //  'AB69',
-          //  'AB71',
-          //  'AB77',
-          //  'AB81',
-          //  'AB84',
-          //  'AB02',
-          //  'ABP',
-          //  'D010',
-          //  'D021',
-          //  'D030',
-          //  'D040',
-          //  'D070',
-          //  'D100',
-          //  'D101',
-          //  'D120',
-          //  'D151',
-          //  'D160',
-          //  'D182',
-          //  'D201',
-          //  'D202',
-          //  'D211',
-          //  'D214',
-          //  'D241',
-          //  'D440',
-          //  'D450',
-          //  'D170',
-          //  'D103',
+            //  'AB57',
+            //  'AB60',
+            //  'AB68',
+            //  'AB69',
+            //  'AB71',
+            //  'AB77',
+            //  'AB81',
+            //  'AB84',
+            //  'AB02',
+            //  'ABP',
+            //  'D010',
+            //  'D021',
+            //  'D030',
+            //  'D040',
+            //  'D070',
+            //  'D100',
+            //  'D101',
+            //  'D120',
+            //  'D151',
+            //  'D160',
+            //  'D182',
+            //  'D201',
+            //  'D202',
+            //  'D211',
+            //  'D214',
+            //  'D241',
+            //  'D440',
+            //  'D450',
+            //  'D170',
+            //  'D103',
             'D180'
         ];
         $results = DB::select(
@@ -567,6 +567,25 @@ class HRISApiController extends Controller
             where f.name is not null
             order by f.name
             '
+        );
+
+        return response()->json(["message" => "sukses", "data" => $results]);
+    }
+
+    public function get_users_with_company()
+    {
+        $results = DB::select(
+            'select
+        distinct f.name AS nama_atasan,
+        f.ektp AS ektp_atasan,
+        a.companycode AS companycode
+        from masterstruct a
+        left join employeestruct b ON a.id = b.struct
+        left join employeestruct d ON a.pastruct1 = d.struct
+        left join masteremployee f ON f.ektp = d.ektp
+        where f.name is not null
+        order by f.name
+        '
         );
 
         return response()->json(["message" => "sukses", "data" => $results]);
