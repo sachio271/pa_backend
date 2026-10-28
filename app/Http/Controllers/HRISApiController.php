@@ -166,8 +166,7 @@ class HRISApiController extends Controller
 
         // --- 1️⃣ Ambil semua data pastruct1 (dengan subquery asli) ---
         $pastruct1Data = DB::select("
-        select
-            a.*, b.*, c.ektp, c.name,	
+            select a.Id,a.CompanyCode,a.PayrollSystem,a.Office,a.Division,a.Department,a.`Level`,a.`Position`,a.DetailPosition,a.PACode, b.StartDate,b.Enddate,b.Struct, c.ektp, c.name,
                 a.pastruct1,	
                 f.name as nama_atasan,	
                 f.ektp as ektp_atasan	
@@ -217,8 +216,7 @@ class HRISApiController extends Controller
 
         // --- 2️⃣ Ambil semua data pastruct2 (pakai subquery juga) ---
         $pastruct2Data = DB::select("
-        select
-            a.*, b.*, c.ektp, c.name,	
+            select a.Id,a.CompanyCode,a.PayrollSystem,a.Office,a.Division,a.Department,a.`Level`,a.`Position`,a.DetailPosition,a.PACode, b.StartDate,b.Enddate,b.Struct, c.ektp, c.name,
                 a.pastruct2,	
                 f.name as nama_atasan,	
                 f.ektp as ektp_atasan	
@@ -392,11 +390,11 @@ class HRISApiController extends Controller
             from employeestruct b
             left join masterstruct a on a.id=b.struct
             left join masteremployee c on c.ektp=b.ektp
-            left join employeestruct d on a.pastruct1=d.struct
+            left join employeestruct d on a.pastruct1=d.struct and d.enddate='99981231'
             left join masteremployee f on f.ektp=d.ektp
 	        right join employeecode m on b.ektp=m.ektp and m.type='WINGSID'
             where b.enddate = ? 
-            and (a.companycode not  like 'SLL%' and a.companycode not  like 'AB%' and a.companycode not  like 'D0%' and a.companycode not  like 'D1%' and a.companycode not  like 'D2%' and a.companycode not  like 'D3%' and a.companycode not  like 'D4%')
+            and (a.companycode not  like 'SLL%' and a.companycode not  like 'AB%' and a.companycode not  like 'D0%' and a.companycode not  like 'D1%' and a.companycode not  like 'D2%' and a.companycode not  like 'D3%' and a.companycode not  like 'D4%' and a.companycode not  like 'D5%' )
             and c.ektp in (
                     select a.ektp
                     from employeestruct a	
