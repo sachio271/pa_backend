@@ -483,8 +483,9 @@ class HRISApiController extends Controller
         $results = DB::select(
             "select distinct a.companycode as payrollsystem
             from masterstruct a
-            left join employeestruct b on a.id=b.struct
-            where ( a.companycode not  like 'AB%' and a.companycode not  like 'D0%' and a.companycode not  like 'D1%' and a.companycode not  like 'D2%' and a.companycode not  like 'D3%' and a.companycode not  like 'D4%' )
+//--markdel left join employeestruct b on a.id=b.struct
+            where ( a.companycode not  like 'AB%' and a.companycode not  like 'D0%' and a.companycode not  like 'D1%' and a.companycode not  like 'D2%' and a.companycode not  like 'D3%' and a.companycode not  like 'D4%' and a.companycode not  like 'D5%' )
+            and a.level not like '%DR0760%'
             order by a.companycode"
         );
 
@@ -500,7 +501,7 @@ class HRISApiController extends Controller
         $results = DB::select(
             'select distinct a.department
             from masterstruct a
-            left join employeestruct b on a.id=b.struct
+//--markdel left join employeestruct b on a.id=b.struct
             where a.companycode = ?
             order by a.department',
             [$company]
