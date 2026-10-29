@@ -480,9 +480,9 @@ class HRISApiController extends Controller
             'D180'
         ];
         $results = DB::select(
-            "select distinct a.companycode as payrollsystem
+            "select distinct a.payrollsystem as payrollsystem
             from masterstruct a
-            where ( a.companycode not  like 'AB%' and a.companycode not  like 'D0%' and a.companycode not  like 'D1%' and a.companycode not  like 'D2%' and a.companycode not  like 'D3%' and a.companycode not  like 'D4%' and a.companycode not  like 'D5%' )
+            where ( a.payrollsystem not  like 'AB%' and a.payrollsystem not  like 'D0%' and a.payrollsystem not  like 'D1%' and a.payrollsystem not  like 'D2%' and a.payrollsystem not  like 'D3%' and a.payrollsystem not  like 'D4%' and a.payrollsystem not  like 'D5%' )
             and a.level not like '%DR0760%'
             order by a.companycode"
         );
@@ -499,7 +499,7 @@ class HRISApiController extends Controller
         $results = DB::select(
             'select distinct a.department
             from masterstruct a
-            where a.companycode = ?
+            where a.payrollsystem = ?
             order by a.department',
             [$company]
         );
