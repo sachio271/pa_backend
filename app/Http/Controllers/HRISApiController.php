@@ -386,11 +386,12 @@ class HRISApiController extends Controller
 
         $results = DB::select(
             "
-            select  a.*, b.*,c.ektp, m.code as wingsID ,c.name,a.pastruct1,f.name as nama_atasan, f.ektp as ektp_atasan
+            select a.Id,a.CompanyCode,a.PayrollSystem,a.Office,a.Division,a.Department,a.`Level`,a.`Position`,a.DetailPosition,a.PACode, b.StartDate,b.Enddate,b.Struct,
+            c.ektp, m.code as wingsID ,c.name,a.pastruct1,f.name as nama_atasan, f.ektp as ektp_atasan
             from employeestruct b
             left join masterstruct a on a.id=b.struct
             left join masteremployee c on c.ektp=b.ektp
-            left join employeestruct d on a.pastruct1=d.struct and d.enddate='99981231'
+            left join employeestruct d on a.pastruct1=d.struct and b.enddate between d.startdate and d.enddate 
             left join masteremployee f on f.ektp=d.ektp
 	        right join employeecode m on b.ektp=m.ektp and m.type='WINGSID'
             where b.enddate = ? 
